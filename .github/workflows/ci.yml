@@ -1,0 +1,38 @@
+name: Build SharpWeb
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        configuration: [Release]
+
+    runs-on: windows-2019
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Install NuGet Packages
+      run: nuget restore SharpWeb.sln
+      shell: cmd
+
+    - name: Build solution
+      run: msbuild -nologo -v:m -p:Configuration=${{ matrix.configuration }} SharpWeb.sln
+      shell: cmd
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: browser.exe
+        path: ./SharpWeb/bin/Release/SharpWeb.exe
